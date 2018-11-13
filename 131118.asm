@@ -8,115 +8,187 @@
 
 ; Replace with your application code
 ldi r19, 0x00
-start:
+ldi r25, 0x00 ; Default values set. Used as flag and triggered when value is different than default value.
+; Basically, when we input the correct password, we are ok. But if we input the incorrect one, we will get a flag.
+; In the following lines, we load the default password.
+ldi r20, 0x00
+ldi r21, 0x00
+ldi r22, 0x00
+ldi r23, 0x00
+; We set the directions.
 ldi r16, 0x00
 out ddra, r16
 ldi r16, 0xFF
 out ddrb, r16
-
-off:
-in r16, pina
-cpi r16, 0b00001010
-breq on
-jmp off
-
-on:
-ldi r16, 0xFF
-out portb, r16
-jmp on
+out ddrc, r16
 
 wait:
-; This represents the locked state in the state-machine diagram
+; This represents the locked state in the state-machine diagram.
 ; power row 1
 ldi r16, 0b00000001
 out portc, r16
 in r16, pina
-cpi r16, 0b00000001
+cpi r16, 0b10000000
 breq push1
-cpi r16, 0b00000010
+cpi r16, 0b00100000
 breq push2
-cpi r16, 0b00000100
-breq push3
 cpi r16, 0b00001000
+breq push3
+cpi r16, 0b00000010
 breq pusha
 
 ; power row 2
-ldi r16, 0b00000010
-out portc, r16
-in r16, pina
-cpi r16, 0b00000001
-breq push4
-cpi r16, 0b00000010
-breq push5
-cpi r16, 0b00000100
-breq push6
-cpi r16, 0b00001000
-breq pushb
-
-; power row 3
 ldi r16, 0b00000100
 out portc, r16
 in r16, pina
-cpi r16, 0b00000001
-breq push7
-cpi r16, 0b00000010
-breq push8
-cpi r16, 0b00000100
-breq push9
+cpi r16, 0b10000000
+breq push4
+cpi r16, 0b00100000
+breq push5
 cpi r16, 0b00001000
+breq push6
+cpi r16, 0b00000010
+breq pushb
+
+; power row 3
+ldi r16, 0b00010000
+out portc, r16
+in r16, pina
+cpi r16, 0b10000000
+breq push7
+cpi r16, 0b00100000
+breq push8
+cpi r16, 0b00001000
+breq push9
+cpi r16, 0b00000010
 breq pushc
 
 ; power row 4
-ldi r16, 0b00001000
+ldi r16, 0b01000000
 out portc, r16
 in r16, pina
-cpi r16, 0b00000001
+cpi r16, 0b10000000
 breq pushstar
-cpi r16, 0b00000010
+cpi r16, 0b00100000
 breq push0
-cpi r16, 0b00000100
-breq pushhash
 cpi r16, 0b00001000
+breq pushhash
+cpi r16, 0b00000010
 breq pushd
 jmp wait
 
 push1:
-ldi r24, 0b00000001
-jmp storemain
-
-inc r19
-
-storemain:
-cpi r19, 0x00
-breq store20
-cpi r19, 0x01
-breq store21
-cpi r19, 0x02
-breq store22
-cpi r19, 0x03
-breq store23
-
-store20:
-mov r20, r24
-; Increment counter
-inc r19
-jmp wait
-
-store21:
-mov r21, r24
-; Increment counter
-inc r19
-jmp wait
-
-store22:
-mov r22, r24
-; Increment counter
-inc r19
-jmp wait
-
-store23:
-mov r23, r24
+ldi r24, 0x01
 jmp validate
 
+push2:
+ldi r24, 0x02
+jmp validate
+
+push3:
+ldi r24, 0x03
+jmp validate
+
+push4:
+ldi r24, 0x04
+jmp validate	
+
+push5:
+ldi r24, 0x05
+jmp validate	
+
+push6:
+ldi r24, 0x06
+jmp validate	
+
+push7:
+ldi r24, 0x07
+jmp validate	
+
+push8:
+ldi r24, 0x08
+jmp validate	
+
+push9:
+ldi r24, 0x09
+jmp validate	
+
+push0:
+ldi r24, 0x00
+jmp validate
+
+pusha:
+ldi r24, 0x0A
+jmp validate
+
+pushb:
+ldi r24, 0x0B
+jmp validate
+
+pushc:
+ldi r24, 0x0C
+jmp validate
+
+pushd:
+ldi r24, 0x0D
+jmp validate
+
+pushhash:
+ldi r24, 0x0E
+jmp validate
+
+pushstar:
+ldi r24, 0x0F
+jmp validate
+
+; The default password will be stored in registers r20 to r23.
+; The new password inputs are going to be stored in r24.
 validate:
-;TODO
+inc r19
+; Here, we compare the register r19 which is set to work as a counter.
+cpi r19, 0x01
+breq validate1
+cpi r19, 0x02
+breq validate2
+cpi r19, 0x03
+breq validate3
+cpi r19, 0x04
+breq validate4
+
+validate1:
+cp r24, r20
+brne error
+jmp wait
+
+validate2:
+cp r24, r21
+brne error
+jmp wait
+
+validate3:
+cp r24, r22
+brne error
+jmp wait
+
+validate4:
+cpi r25, 0x01 ; If this flag is 0x01 (triggered), we also reset the session.
+breq resetall
+cp r24, r23 ; We compare the last input with the last password value.
+brne resetall ; If the comparison doesn't match then we reset the session.
+jmp unlocked ; If none of the above are true, we go to unlocked state.
+
+error:
+ldi r25, 0x01
+jmp wait
+
+resetall:
+ldi r19, 0x00
+ldi r25, 0x00
+jmp wait
+
+unlocked:
+ldi r16, 0x01
+out portb, r16
+jmp unlocked
+
+;TODO - Fix relative branch out of reach
