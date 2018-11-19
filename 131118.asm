@@ -29,52 +29,82 @@ ldi r16, 0b00000001
 out portc, r16
 in r16, pina
 cpi r16, 0b10000000
-breq push1
+brne skip1
+jmp push1
+skip1:
 cpi r16, 0b00100000
-breq push2
+brne skip2
+jmp push2
+skip2:
 cpi r16, 0b00001000
-breq push3
+brne skip3
+jmp push3
+skip3:
 cpi r16, 0b00000010
-breq pusha
-
+brne skipa
+jmp pusha
+skipa:
 ; power row 2
 ldi r16, 0b00000100
 out portc, r16
 in r16, pina
 cpi r16, 0b10000000
-breq push4
+brne skip4
+jmp push4
+skip4:
 cpi r16, 0b00100000
-breq push5
+brne skip5
+jmp push5
+skip5:
 cpi r16, 0b00001000
-breq push6
+brne skip6
+jmp push6
+skip6
 cpi r16, 0b00000010
-breq pushb
-
+brne skipb
+jmp pushb
+skipb:
 ; power row 3
 ldi r16, 0b00010000
 out portc, r16
 in r16, pina
 cpi r16, 0b10000000
-breq push7
+brne skip7
+jmp push7
+skip7:
 cpi r16, 0b00100000
-breq push8
+brne skip8
+jmp push8
+skip8:
 cpi r16, 0b00001000
-breq push9
+brne skip9
+jmp push9
+skip9:
 cpi r16, 0b00000010
-breq pushc
+brne skipc
+jmp pushc
+skipc:
 
 ; power row 4
 ldi r16, 0b01000000
 out portc, r16
 in r16, pina
 cpi r16, 0b10000000
-breq pushstar
+brne skipstar
+jmp pushstar
+skipstar:
 cpi r16, 0b00100000
-breq push0
+brne skip0
+jmp push0
+skip0:
 cpi r16, 0b00001000
-breq pushhash
+brne skiphash
+jmp pushhash
+skiphash:
 cpi r16, 0b00000010
-breq pushd
+brne skipd
+jmp pushd
+skipd:
 jmp wait
 
 push1:
